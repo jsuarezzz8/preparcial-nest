@@ -16,7 +16,6 @@ import { Roles } from 'src/auth/rol.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class RolController {
   constructor(private rolesService: RolService) {}
-
   @Post()
   @Roles('admin')
   async create(@Body(ValidationPipe) createRoleDto: RolDto) {

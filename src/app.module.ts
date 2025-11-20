@@ -7,9 +7,11 @@ import { UserEntity } from './user/user.entity/user.entity';
 import { RolEntity } from './rol/rol.entity/rol.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
     RolModule,
     TypeOrmModule.forRoot({

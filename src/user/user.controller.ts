@@ -1,14 +1,22 @@
-import { Body, Controller, Get, UseInterceptors } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/rol.guard';
 import { UserService } from './user.service';
-import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors/business-errors.interceptor';
+import { Roles } from 'src/auth/rol.decorator';
 
-@Controller('user')
-@UseInterceptors(BusinessErrorsInterceptor)
+@Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @Get('users')
+  constructor(private usersService: UserService) {}
+  @Get('me')
+  async getProfile(@Request() req) {
+    return this.usersService.getProfile(req.user.id);
+  }
+  @Get()
+  @Roles('admin')
   async findAll() {
-    return await this.userService.findAll();
+    return this.usersService.findAll();
   }
 }

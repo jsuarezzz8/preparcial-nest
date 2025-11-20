@@ -2,22 +2,18 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './user.entity/user.entity';
 import { RolEntity } from 'src/rol/rol.entity/rol.entity';
-import { UserRolDto } from './user.dto/user.dto';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-    @InjectRepository(RolEntity)
-    private roleRepository: Repository<RolEntity>,
   ) {}
 
   async getProfile(userId: string) {
