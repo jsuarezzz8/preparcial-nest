@@ -30,7 +30,7 @@ export class UserEntity {
     @JoinTable({
       name: 'user_roles',
       joinColumn: { name: 'user_id', referencedColumnName: 'id' },
-      inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+      inverseJoinColumn: { name: 'rol_id', referencedColumnName: 'id' },
     })
     roles: RolEntity[];
 

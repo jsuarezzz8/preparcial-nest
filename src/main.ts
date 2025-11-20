@@ -14,7 +14,6 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  // Habilitar exclusión de campos con @Exclude()
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000);

@@ -29,7 +29,7 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { email, password, name, phone } = registerDto;
+    const { email, password, name, phone, roles } = registerDto;
     if (!email || !email.includes('@')) {
       throw new BadRequestException('Email inválido');
     }
@@ -46,6 +46,13 @@ export class AuthService {
       name,
       phone,
     });
+    if (roles && roles.length > 0) {
+      const roleEntities = await this.roleRepository
+        .createQueryBuilder('rol')
+        .where('rol.role_name IN (:...roles)', { roles })
+        .getMany();
+      user.roles = roleEntities; // esto crea la vinculación en la tabla intermedia
+    }
     const savedUser = await this.userRepository.save(user);
     return {
       message: 'Usuario registrado con éxito',
