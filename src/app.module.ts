@@ -8,6 +8,8 @@ import { RolEntity } from './rol/rol.entity/rol.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { AppointmentsModule } from './appointments/appointments.module';
+import { AppointmentsEntity } from './appointments/appointments.entity/appointments.entity';
 
 @Module({
   imports: [
@@ -21,11 +23,12 @@ import { ConfigModule } from '@nestjs/config';
       username: 'postgres',
       password: 'postgres',
       database: 'preparcialdb',
-      entities: [UserEntity, RolEntity],
+      entities: [UserEntity, RolEntity, AppointmentsEntity],
       dropSchema: true,
       synchronize: true,
     }),
     AuthModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

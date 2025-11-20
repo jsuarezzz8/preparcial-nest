@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { RolEntity } from '../../rol/rol.entity/rol.entity';
 import { Exclude } from 'class-transformer';
+import { AppointmentsEntity } from 'src/appointments/appointments.entity/appointments.entity';
 @Entity('user')
 export class UserEntity {
     @PrimaryGeneratedColumn('uuid')
@@ -33,5 +36,8 @@ export class UserEntity {
       inverseJoinColumn: { name: 'rol_id', referencedColumnName: 'id' },
     })
     roles: RolEntity[];
+
+    @OneToMany(() => AppointmentsEntity, (appointment) => appointment.user)
+    appointments: AppointmentsEntity[];
 
 }
