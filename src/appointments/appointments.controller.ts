@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable prettier/prettier */
 import { Body, Controller, Delete, Get, Patch, Post, ValidationPipe } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
@@ -33,11 +31,4 @@ export class AppointmentsController {
     return this.appointmentService.findAll();
   }
 
-  @Get()
-  @Roles('user','doctor')
-  async findUserAppointments(@Request() req) {
-    const userId = req.user.id;
-    const appointments = await this.appointmentService.findAll();
-    return appointments.filter(appointment => appointment.user.id === userId);
-  }
 }
