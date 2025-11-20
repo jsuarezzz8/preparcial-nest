@@ -1,25 +1,31 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Body, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/rol.guard';
 import { RolService } from './rol.service';
-import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors/business-errors.interceptor';
 import { RolDto } from './rol.dto/rol.dto';
-import { RolEntity } from './rol.entity/rol.entity';
-import { plainToInstance } from 'class-transformer';
+import { Roles } from 'src/auth/rol.decorator';
 
-@Controller('rol')
-@UseInterceptors(BusinessErrorsInterceptor)
+@Controller('roles')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class RolController {
-  constructor(private readonly rolService: RolService) {}
+  constructor(private rolesService: RolService) {}
 
-  @Post('roles')
-  async create(@Body() rolDto: RolDto) {
-    const rol: RolEntity = plainToInstance(RolEntity, rolDto);
-    return await this.rolService.create(rol);
+  @Post()
+  @Roles('admin')
+  async create(@Body(ValidationPipe) createRoleDto: RolDto) {
+    return this.rolesService.create(createRoleDto);
   }
 
-  @Get('roles')
+  @Get()
+  @Roles('admin')
   async findAll() {
-    return await this.rolService.findAll();
+    return this.rolesService.findAll();
   }
 }

@@ -17,7 +17,7 @@ import { AuthModule } from './auth/auth.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'POSTGRES',
+      password: 'postgres',
       database: 'preparcialdb',
       entities: [UserEntity, RolEntity],
       dropSchema: true,

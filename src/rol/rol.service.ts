@@ -1,47 +1,52 @@
-/* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolEntity } from './rol.entity/rol.entity';
-import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
+import { RolDto } from './rol.dto/rol.dto';
 
 @Injectable()
 export class RolService {
   constructor(
     @InjectRepository(RolEntity)
-    private readonly rolRepository: Repository<RolEntity>,
+    private roleRepository: Repository<RolEntity>,
   ) {}
 
-  async findAll(): Promise<RolEntity[]> {
-    return await this.rolRepository.find({ relations: ['users'] });
-  }
-
-  async findOne(id: string): Promise<RolEntity> {
-    const rol: RolEntity | null = await this.rolRepository.findOne({
-      where: { id },
-      relations: ["roles"],
+  async create(createRoleDto: RolDto) {
+    const { role_name, description } = createRoleDto;
+    if (!role_name) {
+      throw new BadRequestException('role_name es requerido');
+    }
+    const existingRole = await this.roleRepository.findOne({
+      where: { role_name },
     });
-    if (!rol)
-      throw new BusinessLogicException('Rol with the given id was not found', BusinessError.NOT_FOUND);
-    return rol;
+    if (existingRole) {
+      throw new ConflictException('role_name ya existe');
+    }
+    const role = this.roleRepository.create({ role_name, description });
+    const savedRole = await this.roleRepository.save(role);
+
+    return {
+      message: 'Rol creado con éxito',
+      roleId: savedRole.id,
+    };
   }
 
-  async create(rol: RolEntity): Promise<RolEntity> {
-    return await this.rolRepository.save(rol);
+  async findAll() {
+    try {
+      const roles = await this.roleRepository.find();
+      return roles.map((role) => ({
+        id: role.id,
+        role_name: role.role_name,
+        description: role.description,
+      }));
+    } catch (error) {
+      throw new InternalServerErrorException('Error al obtener roles');
+    }
   }
-
-  async update(id: string, rol: RolEntity): Promise<RolEntity> {
-    const persistedRol: RolEntity | null = await this.rolRepository.findOne({ where: {id}});
-      if (!persistedRol)
-        throw new BusinessLogicException("The rol with the given id was not found", BusinessError.NOT_FOUND);
-      return await this.rolRepository.save({...persistedRol, ...rol})
-  }
-
-  async delete(id: string) {
-       const rol: RolEntity | null= await this.rolRepository.findOne({where:{id}});
-       if (!rol)
-         throw new BusinessLogicException("The rol with the given id was not found", BusinessError.NOT_FOUND);
-    
-       await this.rolRepository.remove(rol);
-   }
 }

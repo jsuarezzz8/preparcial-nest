@@ -1,18 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, JoinTable } from 'typeorm';
 import { RolEntity } from '../../rol/rol.entity/rol.entity';
+import { Exclude } from 'class-transformer';
 @Entity('user')
 export class UserEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({nullable: false})
+    @Column({unique: true, nullable: false})
     email: string;
 
     @Column({nullable: false})
+    @Exclude()
     password: string;
 
     @Column()
@@ -24,14 +23,15 @@ export class UserEntity {
     @Column({default: true})
     is_active: boolean;
 
-    @CreateDateColumn({ 
-      name: 'created_at',
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP'
-    })
+    @CreateDateColumn()
     created_at: Date;
 
-    @ManyToMany(() => RolEntity, rol => rol.users)
+    @ManyToMany(() => RolEntity, (role) => role.users, { eager: true })
+    @JoinTable({
+      name: 'user_roles',
+      joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+      inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+    })
     roles: RolEntity[];
 
 }

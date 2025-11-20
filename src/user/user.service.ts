@@ -1,47 +1,64 @@
-/* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './user.entity/user.entity';
-import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
+import { RolEntity } from 'src/rol/rol.entity/rol.entity';
+import { UserRolDto } from './user.dto/user.dto';
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private userRepository: Repository<UserEntity>,
+    @InjectRepository(RolEntity)
+    private roleRepository: Repository<RolEntity>,
   ) {}
 
-  async findAll(): Promise<UserEntity[]> {
-    return await this.userRepository.find({ relations: ['roles'] });
-  }
-
-  async findOne(id: string): Promise<UserEntity> {
-    const user: UserEntity | null = await this.userRepository.findOne({
-      where: { id },
-      relations: ["roles"],
+  async getProfile(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
     });
-    if (!user)
-      throw new BusinessLogicException('User with the given id was not found', BusinessError.NOT_FOUND);
-    return user;
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      roles: user.roles.map((role) => ({
+        id: role.id,
+        role_name: role.role_name,
+        description: role.description,
+      })),
+    };
   }
 
-  async create(user: UserEntity): Promise<UserEntity> {
-    return await this.userRepository.save(user);
+  async findAll() {
+    try {
+      const users = await this.userRepository.find({
+        relations: ['roles'],
+      });
+      return users.map((user) => ({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        roles: user.roles.map((role) => ({
+          id: role.id,
+          role_name: role.role_name,
+          description: role.description,
+        })),
+      }));
+    } catch (error) {
+      throw new InternalServerErrorException('Error al listar usuarios');
+    }
   }
-
-  async update(id: string, user: UserEntity): Promise<UserEntity> {
-    const persistedUser: UserEntity | null = await this.userRepository.findOne({ where: {id}});
-      if (!persistedUser)
-        throw new BusinessLogicException("The user with the given id was not found", BusinessError.NOT_FOUND);
-      return await this.userRepository.save({...persistedUser, ...user})
-  }
-
-  async delete(id: string) {
-       const user: UserEntity | null= await this.userRepository.findOne({where:{id}});
-       if (!user)
-         throw new BusinessLogicException("The user with the given id was not found", BusinessError.NOT_FOUND);
-    
-       await this.userRepository.remove(user);
-   }
 }
